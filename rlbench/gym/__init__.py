@@ -11,18 +11,46 @@ for task_file in TASKS:
     task_name = task_file.split('.py')[0]
     task_class = name_to_task_class(task_name)
     register(
+        id='%s-v0' % task_name,
+        entry_point='rlbench.gym:RLBenchEnv',
+        max_episode_steps=10,
+        kwargs={
+            'task_class': task_class,
+        }
+    )
+    register(
         id='%s-state-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
+        max_episode_steps=10,
         kwargs={
             'task_class': task_class,
             'observation_mode': 'state'
         }
     )
     register(
-        id='%s-vision-v0' % task_name,
+        id='%s-rgb-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
+        max_episode_steps=10,
         kwargs={
             'task_class': task_class,
-            'observation_mode': 'vision'
+            'observation_mode': 'rgb'
+        }
+    )
+    register(
+        id='%s-rgbd-v0' % task_name,
+        entry_point='rlbench.gym:RLBenchEnv',
+        max_episode_steps=10,
+        kwargs={
+            'task_class': task_class,
+            'observation_mode': 'rgbd'
+        }
+    )
+    register(
+        id='%s-pcd-v0' % task_name,
+        entry_point='rlbench.gym:RLBenchEnv',
+        max_episode_steps=10,
+        kwargs={
+            'task_class': task_class,
+            'observation_mode': 'pcd'
         }
     )
