@@ -13,7 +13,7 @@ for task_file in TASKS:
     register(
         id='%s-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
-        max_episode_steps=10,
+        max_episode_steps=20,
         kwargs={
             'task_class': task_class,
         }
@@ -21,36 +21,36 @@ for task_file in TASKS:
     register(
         id='%s-state-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
-        max_episode_steps=10,
+        max_episode_steps=20,
         kwargs={
             'task_class': task_class,
-            'observation_mode': 'state'
+            'obs_mode': 'state'
         }
     )
     register(
         id='%s-rgb-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
-        max_episode_steps=10,
+        max_episode_steps=20,
         kwargs={
             'task_class': task_class,
-            'observation_mode': 'rgb'
+            'obs_mode': 'rgb'
         }
     )
     register(
         id='%s-rgbd-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
-        max_episode_steps=10,
+        max_episode_steps=20,
         kwargs={
             'task_class': task_class,
-            'observation_mode': 'rgbd'
+            'obs_mode': 'rgbd'
         }
     )
     register(
         id='%s-pcd-v0' % task_name,
         entry_point='rlbench.gym:RLBenchEnv',
-        max_episode_steps=10,
+        max_episode_steps=20,
         kwargs={
             'task_class': task_class,
-            'observation_mode': 'pcd'
+            'obs_mode': 'pcd'
         }
     )

@@ -19,21 +19,21 @@ class RLBenchEnv(gym.Env):
 
     metadata = {'render.modes': ['human', 'rgb_array']}
 
-    def __init__(self, task_class, observation_mode='state',
+    def __init__(self, task_class, obs_mode='state',
                  render_mode: Union[None, str] = None, n_points=512, 
                  shaped_rewards=False):
-        self._observation_mode = observation_mode
+        self._obs_mode = obs_mode
         self._render_mode = render_mode
         self.n_points = n_points
         obs_config = ObservationConfig()
-        if observation_mode == 'state':
+        if obs_mode == 'state':
             obs_config.set_all_high_dim(False)
             obs_config.set_all_low_dim(True)
-        elif observation_mode in ["rgb", "rgbd", "pcd"]:
+        elif obs_mode in ["rgb", "rgbd", "pcd"]:
             obs_config.set_all(True)
         else:
             raise ValueError(
-                'Unrecognised observation_mode: %s.' % observation_mode)
+                'Unrecognised obs_mode: %s.' % obs_mode)
 
         action_mode = MoveArmThenGripper(JointVelocity(), Discrete())
         self.env = Environment(
@@ -46,27 +46,27 @@ class RLBenchEnv(gym.Env):
         self.action_space = spaces.Box(
             low=-1.0, high=1.0, shape=self.env.action_shape)
 
-        if observation_mode == 'state':
+        if obs_mode == 'state':
             self.observation_space = spaces.Box(
                 low=-np.inf, high=np.inf, shape=obs.get_low_dim_data().shape)
-        elif observation_mode in ['rgb', "rgbd"]:
+        elif obs_mode in ['rgb', "rgbd"]:
             ret = {
-                "state": spaces.Box(
-                    low=-np.inf, high=np.inf,
-                    shape=obs.get_low_dim_data().shape),
+                # "state": spaces.Box(
+                #     low=-np.inf, high=np.inf,
+                #     shape=obs.get_low_dim_data().shape),
                 "rgb": spaces.Box(
                     low=0, high=1, shape=obs.left_shoulder_rgb.shape[:-1] + (12,))
             }
-            if observation_mode == "rgbd":
+            if obs_mode == "rgbd":
                 ret["depth"] = spaces.Box(
                     low=0, high=1, shape=obs.left_shoulder_depth.shape[:-1] + (4, ))
                 
             self.observation_space = spaces.Dict(ret)
-        elif observation_mode == 'pcd':
+        elif obs_mode == 'pcd':
             self.observation_space = spaces.Dict({
-                "state": spaces.Box(
-                    low=-np.inf, high=np.inf,
-                    shape=obs.get_low_dim_data().shape),
+                # "state": spaces.Box(
+                #     low=-np.inf, high=np.inf,
+                #     shape=obs.get_low_dim_data().shape),
                 "xyz": spaces.Box(
                     low=0, high=1, shape=(self.n_points, 3)),
                 "rgb": spaces.Box(
@@ -85,9 +85,9 @@ class RLBenchEnv(gym.Env):
 
     def _extract_obs(self, obs) -> Dict[str, np.ndarray]:
         # from IPython import embed; embed()
-        if self._observation_mode == 'state':
+        if self._obs_mode == 'state':
             return obs.get_low_dim_data()
-        elif self._observation_mode in ['rgb', "rgbd"]:
+        elif self._obs_mode in ['rgb', "rgbd"]:
             rgb = np.concatenate([
                     obs.left_shoulder_rgb, 
                     obs.right_shoulder_rgb,
@@ -96,19 +96,18 @@ class RLBenchEnv(gym.Env):
                 ], axis=-1) / 255.0
         
             ret = {
-                "state": obs.get_low_dim_data(),
-                "rgb": rgb,
+                # "state": obs.get_low_dim_data(),
+                "rgb": rgb.transpose(2, 0, 1),
             }
-            if self._observation_mode == "rgbd":
+            if self._obs_mode == "rgbd":
                 depth = np.concatenate([
                         obs.left_shoulder_depth, 
                         obs.right_shoulder_depth, 
                         obs.wrist_depth, 
                         obs.front_depth, 
                     ], axis=-1)
-                ret["depth"] = depth
-            return ret
-        elif self._observation_mode == 'pcd':
+                ret["depth"] = depth.transpose(2, 0, 1)
+        elif self._obs_mode == 'pcd':
             # from pyrl.utils.visualization import visualize_pcd, plot_show_image
             
             xyz = np.concatenate([obs.left_shoulder_point_cloud, obs.right_shoulder_point_cloud, obs.wrist_point_cloud, obs.front_point_cloud], axis=0).reshape(-1, 3)
@@ -141,11 +140,13 @@ class RLBenchEnv(gym.Env):
             rgb = rgb[idx]
             mask = mask[idx]
             
-            return {
-                "state": obs.get_low_dim_data(),
-                "xyz": xyz,
-                "rgb": rgb
+            ret = {
+                # "state": obs.get_low_dim_data(),
+                "xyz": xyz.T,
+                "rgb": rgb.T
             }
+        # ret["state"] = obs.get_low_dim_data()
+        return ret
 
     def render(self, mode='human') -> Union[None, np.ndarray]:
         if mode != self._render_mode:

@@ -118,3 +118,6 @@ dmypy.json
 
 index.html
 .history
+tmp/
+block-insertion-train/
+*.pkl
